@@ -18,13 +18,27 @@ public class SlimSeleniumDriver {
 	private static final String FORWARD_SLASH = "/";
 	private String timeoutSeconds = "30";
 	private String timeoutMilliseconds = timeoutSeconds + "000";
+
 	
 	@SystemUnderTest
 	public Selenium seleniumInstance;
 	
 	public SlimSeleniumDriver(String host, int port, String browser, String baseURL) {
-		seleniumInstance = new DefaultSelenium(host, port, browser, baseURL);
+		seleniumInstance = createSelenium(host, port, browser, removeAnchor(baseURL));
 		seleniumInstance.start();
+	}
+	
+	/**
+	 * Factory method for DefaultSelinium. 
+	 * 
+	 * @param host - host of Selenium server
+	 * @param port - port number for Selenium server
+	 * @param browser - browser to be opened by Selenium
+	 * @param baseURL - base URL to open
+	 * @return Selenium instance.
+	 */
+	protected Selenium createSelenium(String host, int port, String browser, String baseURL) {
+		return new DefaultSelenium(host, port, browser, baseURL);
 	}
 	
 	public String getCookies() {
@@ -345,6 +359,7 @@ public class SlimSeleniumDriver {
         return elementFound;
 	}
 	
+	
 	//Waiter classes
 	protected class WaitForElementToBeEditable extends Wait {
 		protected String locator;
@@ -449,6 +464,22 @@ public class SlimSeleniumDriver {
     private boolean isKnownSeleniumBug(SeleniumException exception) {
 		return exception.getMessage().contains(KNOWN_SELENIUM_BUG_EXCEPTION_MESSAGE);
 	}
+    
+    String removeAnchor(String baseURL) {
+    	StringBuilder newBaseURL = new StringBuilder();
+    	if (baseURL.contains("<a")) {
+    		// strip out anchor
+    		String anchorStartRemoved = baseURL.replaceFirst("<a.*\">", "");
+    		newBaseURL.append(anchorStartRemoved.replaceFirst("</a>", ""));
+    		newBaseURL.trimToSize();
+    	}
+    	else
+    	{
+    		newBaseURL.append(baseURL);
+    	}
+    	return newBaseURL.toString();
+    }
+    
 }
 
 
